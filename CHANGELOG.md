@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Replace the failing QQ search path with desktop MusicU search and MusicU lyric requests, retaining legacy endpoint fallback.
+- Try NetEase cloud search and the newer lyric endpoint before their legacy counterparts.
+- Match catalogue entries by artist, version, and duration; try additional matching entries when a lyric response is empty.
+- Prefer provider IDs from media URLs and preserve YRC/QRC timing, translations, and romanization.
+- Bound provider requests and response sizes; accept JSONP and plain/Base64 lyric responses.
+
 ## 1.4.4
 
 - Rank LRCLIB results by identity, duration, and synchronized lyric availability.
