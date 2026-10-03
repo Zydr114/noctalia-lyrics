@@ -82,6 +82,20 @@ class ProviderParsingTest(unittest.TestCase):
 
 class ProviderRequestsTest(unittest.TestCase):
     @mock.patch("lyric_sources.request_json")
+    def test_malformed_netease_envelope_uses_fallback(self, request):
+        request.side_effect = [{"code": 200, "result": []},
+                               {"code": 200, "result": {"songs": [NCM_SONG]}},
+                               {"code": 200, "lrc": {"lyric": "[00:01]fallback"}}]
+        self.assertEqual(lyrics.adapter_netease(TRACK, {}, {})["type"], "lyrics")
+
+    @mock.patch("lyric_sources.itunes_cover", return_value="")
+    @mock.patch("lyric_sources.request_json")
+    def test_keeps_installed_musixmatch_deduplication(self, request, _cover):
+        request.return_value = {"subtitle_body": "[00:01]Line\n[00:01]Line\n[00:02]Next"}
+        result = lyrics.adapter_musixmatch(TRACK, {"musixmatch_token": "test-token"}, {})
+        self.assertEqual([item["text"] for item in result["lines"]], ["Line", "Next"])
+
+    @mock.patch("lyric_sources.request_json")
     def test_netease_modern_search_and_lyric(self, request):
         request.side_effect = [{"code": 200, "result": {"songs": [NCM_SONG]}},
                                {"code": 200, "lrc": {"lyric": "[00:01]hello"}}]

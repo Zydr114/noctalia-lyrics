@@ -20,6 +20,45 @@ Install these commands on `PATH`:
 - `cp`: preserve local MPRIS artwork in the plugin cache.
 - `chmod`: secures the temporary request directory before credentials are
   written.
+- `timeout`: bounds adapter processes and MPRIS commands (provided by coreutils).
+
+## Installing the improved backend on an existing plugin
+
+If your installed community plugin is newer than this checkout, retain its
+interface and manifest. The backend installer copies that installed plugin to
+Noctalia's local plugin directory, replaces only `lyrics_service.luau`,
+`lyric_sources.py`, and `music_sources.py`, and adds the `timeout` dependency if
+needed. It leaves the community source files untouched. No root access or pip
+packages are required.
+
+From this checkout, first inspect the paths, then install and restart the entry:
+
+```sh
+python3 scripts/install-backend.py --dry-run
+python3 scripts/install-backend.py --install
+noctalia msg config-reload
+noctalia msg plugins disable h465855hgg/lyrics
+noctalia msg plugins enable h465855hgg/lyrics
+```
+
+The default base is
+`~/.local/state/noctalia/plugins/materialized/community/lyrics`; the local
+override is `~/.local/share/noctalia/plugins/lyrics`. The installer honors XDG
+and Noctalia directory overrides; use `--base` and `--destination` for other
+layouts. It backs up an existing local override outside the plugin discovery
+directory and records the installed backend files in `BACKEND-OVERLAY.json`.
+
+Local plugins take precedence over source plugins. Your existing bar entries,
+settings, and widget UI are retained. Local overrides are snapshots: community
+updates will not update them until you rerun the installer. For automatic mode,
+put `netease`, `qqmusic`, then `lrclib` at the start of the lyric source order in
+Advanced settings. To test a provider independently, select it directly.
+
+To return to the community version, move the local override out of the local
+plugin directory, reload the config, and disable/enable the plugin again. If a
+previous local override existed, restore the backup printed by the installer
+instead. Detailed verification and recovery notes are in
+[docs/backend-recovery.md](docs/backend-recovery.md).
 
 ## Usage
 
@@ -77,7 +116,7 @@ Run validation after every change:
 ```sh
 python3 tools/validate.py
 noctalia plugins lint .
-python3 -m py_compile lyric_sources.py krc_decode.py lrclib_lyric.py
+python3 -m py_compile lyric_sources.py music_sources.py krc_decode.py lrclib_lyric.py
 python3 -m unittest discover -v
 ```
 

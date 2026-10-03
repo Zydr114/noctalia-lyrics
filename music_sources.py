@@ -20,6 +20,10 @@ def text(value):
     return str(value or "").strip()
 
 
+def mapping(value):
+    return value if isinstance(value, dict) else {}
+
+
 def normalized(value):
     return "".join(c for c in unicodedata.normalize("NFKC", text(value)).casefold() if c.isalnum())
 
@@ -96,7 +100,10 @@ def ranked_songs(songs, track, source):
         version = versions(text(song["title"]) + " " + text(song.get("subtitle")))
         if version != wanted_version:
             continue
-        difference = abs(float(song["duration"] or 0) - wanted_duration) if wanted_duration and song["duration"] else float("inf")
+        try:
+            difference = abs(float(song["duration"] or 0) - wanted_duration) if wanted_duration and song["duration"] else float("inf")
+        except (TypeError, ValueError):
+            continue
         if difference != float("inf") and difference > max(20000, wanted_duration * 0.1):
             continue
         artist_score = 4 if wanted_artist and artist == wanted_artist else 2 if wanted_artist and artist else 0
@@ -177,7 +184,7 @@ class CatalogueClient:
             if self.source == "netease":
                 for endpoint in ("/api/cloudsearch/pc", "/api/search/get"):
                     result = self.request("https://music.163.com" + endpoint, {"s": query.strip(), "type": 1, "limit": 20, "offset": 0})
-                    songs = (result.get("result") or {}).get("songs", []) if result.get("code") == 200 else []
+                    songs = mapping(result.get("result")).get("songs", []) if result.get("code") == 200 else []
                     ranked = ranked_songs(songs, track, self.source)
                     if ranked:
                         return ranked
@@ -186,13 +193,13 @@ class CatalogueClient:
                     "module": QQ_SEARCH, "method": "DoSearchForQQMusicDesktop",
                     "param": {"query": query.strip(), "num_per_page": 20, "page_num": 1, "search_type": 0},
                 }})
-                packet = result.get(QQ_SEARCH) or {}
-                songs = (((packet.get("data") or {}).get("body") or {}).get("song") or {}).get("list", []) if result.get("code") == 0 and packet.get("code") == 0 else []
+                packet = mapping(result.get(QQ_SEARCH))
+                songs = mapping(mapping(mapping(packet.get("data")).get("body")).get("song")).get("list", []) if result.get("code") == 0 and packet.get("code") == 0 else []
                 ranked = ranked_songs(songs, track, self.source)
                 if ranked:
                     return ranked
                 result = self.request("https://c.y.qq.com/soso/fcgi-bin/client_search_cp", {"format": "json", "p": 1, "n": 20, "w": query.strip()})
-                songs = ((result.get("data") or {}).get("song") or {}).get("list", []) if result.get("code") == 0 else []
+                songs = mapping(mapping(result.get("data")).get("song")).get("list", []) if result.get("code") == 0 else []
                 ranked = ranked_songs(songs, track, self.source)
                 if ranked:
                     return ranked
@@ -216,7 +223,7 @@ class CatalogueClient:
             result = self.request(QQ_RPC, payload={"comm": {"ct": 24, "cv": 0}, "lyric": {
                 "module": "music.musichallSong.PlayLyricInfo", "method": "GetPlayLyricInfo", "param": param,
             }})
-            packet = result.get("lyric") or {}
+            packet = mapping(result.get("lyric"))
             if result.get("code") == 0 and packet.get("code") == 0 and isinstance(packet.get("data"), dict):
                 yield packet["data"]
             if song.get("mid"):

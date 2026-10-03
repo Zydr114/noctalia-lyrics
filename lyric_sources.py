@@ -196,7 +196,7 @@ def parse_plain(text):
 
 
 def dedupe_timed_lines(lines):
-    """Retain the subtitle deduplication shipped by the installed 1.5.x plugin."""
+    """Keep one Musixmatch subtitle entry per timestamp."""
     result, seen = [], set()
     for item in lines:
         timestamp = item.get("time", -1)

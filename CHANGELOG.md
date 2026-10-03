@@ -10,6 +10,7 @@
 - Recover from missing asynchronous callbacks, rejected adapter processes, and transient MPRIS failures.
 - Retry failed lyrics on the same track with backoff, isolate each source attempt, and discard stale callbacks after track/source changes or external pushes.
 - Parse metadata with bounded linear splitting and request embedded lyrics only when needed; remove unused legacy fetch code.
+- Add a backend-only local installer that retains a newer installed widget/manifest and backs up existing overrides.
 
 ## 1.4.4
 
