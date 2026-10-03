@@ -47,9 +47,10 @@ need_command playerctl
 need_command python3
 need_command cp
 need_command chmod
+need_command timeout
 
 if [ -z "$MISSING_COMMANDS" ]; then
-  echo "All runtime commands are installed: playerctl python3 cp chmod"
+  echo "All runtime commands are installed: playerctl python3 cp chmod timeout"
   exit 0
 fi
 
@@ -140,6 +141,7 @@ need_command playerctl
 need_command python3
 need_command cp
 need_command chmod
+need_command timeout
 
 if [ -n "$MISSING_COMMANDS" ]; then
   echo "Still missing after installation:$MISSING_COMMANDS" >&2

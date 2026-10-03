@@ -7,6 +7,9 @@
 - Match catalogue entries by artist, version, and duration; try additional matching entries when a lyric response is empty.
 - Prefer provider IDs from media URLs and preserve YRC/QRC timing, translations, and romanization.
 - Bound provider requests and response sizes; accept JSONP and plain/Base64 lyric responses.
+- Recover from missing asynchronous callbacks, rejected adapter processes, and transient MPRIS failures.
+- Retry failed lyrics on the same track with backoff, isolate each source attempt, and discard stale callbacks after track/source changes or external pushes.
+- Parse metadata with bounded linear splitting and request embedded lyrics only when needed; remove unused legacy fetch code.
 
 ## 1.4.4
 

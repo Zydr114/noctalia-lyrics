@@ -47,7 +47,7 @@ class ProviderParsingTest(unittest.TestCase):
     def test_yrc_absolute_words_offset_and_layers(self):
         result = lyrics.provider_lines({
             "yrc": {"lyric": "[offset:200]\n[1000,1000](1000,400,0)你(1400,600,0)好"},
-            "ytrans": {"lyric": "[00:01.20]Hello"},
+            "ytlrc": {"lyric": "[00:01.20]Hello"},
             "yromalrc": {"lyric": "[00:01.20]ni hao"},
         }, "netease")
         self.assertEqual(result[0]["text"], "你好")

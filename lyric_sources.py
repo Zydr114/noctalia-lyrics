@@ -195,6 +195,18 @@ def parse_plain(text):
     return [line(-1, text=value) for value in str(text or "").splitlines() if clean_text(value)]
 
 
+def dedupe_timed_lines(lines):
+    """Retain the subtitle deduplication shipped by the installed 1.5.x plugin."""
+    result, seen = [], set()
+    for item in lines:
+        timestamp = item.get("time", -1)
+        if not clean_text(item.get("text")) or timestamp in seen:
+            continue
+        result.append(item)
+        seen.add(timestamp)
+    return result
+
+
 def parse_lrc(text):
     text = str(text or "").replace("\r\n", "\n").replace("\r", "\n")
     offset = 0
@@ -649,7 +661,7 @@ def lyric_field(payload, name):
 def provider_lines(payload, source):
     if source == "netease":
         primary_fields = ("yrc", "klyric", "lrc")
-        translation_fields = ("ytrans", "ytlyric", "tlyric")
+        translation_fields = ("ytlrc", "ytrans", "ytlyric", "tlyric")
         romanization_fields = ("yromalrc", "romalrc")
     else:
         primary_fields = ("qrc", "lyric", "lrc")
@@ -907,7 +919,7 @@ def adapter_musixmatch(track, credentials, options):
     subtitle = first_value(data, ("subtitle_body",))
     if not subtitle:
         return empty(source, "musixmatch: lyrics unavailable")
-    lines = parse_lrc(subtitle)
+    lines = dedupe_timed_lines(parse_lrc(subtitle))
     translated = first_value(data, ("translation_list", "translations"))
     if isinstance(translated, list):
         translated_lines = []
